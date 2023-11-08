@@ -58,6 +58,7 @@ def levenshtein_cota_optimista(x, y, threshold):
     
 def damerau_restricted_matriz(x, y, threshold=None):
     # completar versión Damerau-Levenstein restringida con matriz
+    #PRUEBA
     return 0
     # COMPLETAR
 
