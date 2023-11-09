@@ -4,7 +4,7 @@ def levenshtein_matriz(x, y, threshold=None):
     # esta versiÃ³n no utiliza threshold, se pone porque se puede
     # invocar con Ã©l, en cuyo caso se ignora
     lenX, lenY = len(x), len(y)
-    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int64)
     for i in range(1, lenX + 1):
         D[i][0] = D[i - 1][0] + 1
     for j in range(1, lenY + 1):
@@ -141,7 +141,7 @@ def damerau_restricted_matriz(x, y, threshold=None):
                 D[i - 2][j - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf')
             )
     # COMPLETAR
-    return D[lenX, lenY]
+    return 0
 
 def damerau_restricted_edicion(x, y, threshold=None):
     # partiendo de damerau_restricted_matriz aÃ±adir recuperar
@@ -165,11 +165,29 @@ def damerau_intermediate_matriz(x, y, threshold=None):
                 D[i - 1][j] + 1,
                 D[i][j - 1] + 1,
                 D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
-                D[i - 2][j - 2] + 1,
-                D[i - 3][j - 2] + 2,
-                D[i - 2][j - 3] + 2,
             )
+            if (i > 1 and j > 1)\
+                and (x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2]):
+                D[i][j] = min(
+                    D[i][j],
+                    D[i - 2][j - 2] + 1
+                )
 
+            #acb -> ba
+            if (i > 2 and j > 1)\
+                and (x[i - 3] == y[j - 1] and x[i - 1] == y[j - 2]):
+                D[i][j] = min(
+                    D[i][j],
+                    D[i - 3][j - 2] + 2
+                )
+
+            #ab -> bca
+            if (i > 1 and j > 2)\
+                and (x[i - 2] == y[j - 1] and x[i - 1] == y[j - 3]):
+                D[i][j] = min(
+                    D[i][j],
+                    D[i - 2][j - 3] + 2
+                )
     return D[lenX, lenY]
 
 def damerau_intermediate_edicion(x, y, threshold=None):
