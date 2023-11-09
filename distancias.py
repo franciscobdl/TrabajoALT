@@ -96,7 +96,27 @@ def levenshtein_reduccion(x, y, threshold=None):
 
 def levenshtein(x, y, threshold):
     # completar versiÃ³n reducciÃ³n coste espacial y parada por threshold
-    return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    lenX, lenY = len(x), len(y)
+    Vcurrent = np.zeros(lenX + 1, dtype=int)
+    Vprev = np.zeros(lenX + 1, dtype=int)
+    Vcurrent[0]=0
+
+    for i in range(1, lenX + 1):
+       Vcurrent[i] = Vcurrent[i - 1] + 1
+
+    for j in range(1, lenY + 1):
+        Vcurrent, Vprev = Vprev, Vcurrent
+        Vcurrent[0] = Vprev[0] + 1
+        for i in range(1, lenX + 1):
+            Vcurrent[i] = min(
+                Vcurrent[i - 1] + 1, 
+                Vprev[i] + 1, 
+                Vprev[i - 1] + (x[i - 1] != y[j - 1])
+            )
+        # if Vcurrent[lenX] > threshold:
+        #     return 0
+
+    return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def levenshtein_cota_optimista(x, y, threshold):
     dic = {}
