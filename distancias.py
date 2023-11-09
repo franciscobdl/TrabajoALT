@@ -55,9 +55,12 @@ def levenshtein(x, y, threshold):
         Vcurrent[0] = Vprev[0] + 1
         for i in range(1, lenX + 1):
             Vcurrent[i] = min(Vcurrent[i - 1] + 1, Vprev[i] + 1, Vprev[i - 1] + (x[i - 1] != y[j - 1]),)
-            # Parada  si estamos en vector columna y este ya tiene un valor igual o superior
-            # al umbral proporcionado (threshold)
-            if Vcurrent[i] >= threshold:
+            if i != lenX:
+                Vnext = Vcurrent
+                Vnext[i+1] = min(Vnext[i] + 1, Vcurrent[i + 1] + 1, Vcurrent[i] + (x[i] != y[j - 1]),)
+                # Parada  si estamos en vector columna y este ya tiene un valor igual o superior
+                # al umbral proporcionado (threshold)
+            if Vcurrent[i] >= threshold + 1:
                 return threshold + 1
 
     return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
@@ -67,7 +70,6 @@ def levenshtein_cota_optimista(x, y, threshold):
 
 def damerau_restricted_matriz(x, y, threshold=None):
     # completar versión Damerau-Levenstein restringida con matriz
-    lenX, lenY = len(x), len(y)
     # COMPLETAR
     #return D[lenX, lenY]
     return 0
@@ -85,18 +87,18 @@ def damerau_intermediate_matriz(x, y, threshold=None):
     # completar versión Damerau-Levenstein intermedia con matriz
     lenX, lenY = len(x), len(y)
     D = np.zeros((lenX + 1, lenY + 1), dtype=int)
-    for i in range(0, lenX):
+    for i in range(1, lenX + 1):
         D[i][0] = D[i - 1][0] + 1
-    for j in range(0, lenY):
+    for j in range(1, lenY + 1):
         D[0][j] = D[0][j - 1] + 1
-    for i in range(1, lenX):
-        for j in range(1, lenY):
-            if i>1 and j>1 and x[i]== y[j-1] and x[i-1]==y[j]:
-                D[i][j]= min(D[i][j], D[i - 2, j - 2] + 1)
-            else:
-                D[i][j] = min(D[i - 1][j] + 1, D[i][j - 1] + 1, D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),)
-                
+        for i in range(1, lenX + 1):
+            D[i][j] = min(
+                D[i - 1][j] + 1,
+                D[i][j - 1] + 1,
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
+            )
     return D[lenX, lenY]
+
 
 def damerau_intermediate_edicion(x, y, threshold=None):
     # partiendo de matrix_intermediate_damerau añadir recuperar
