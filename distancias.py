@@ -1,140 +1,119 @@
 import numpy as np
 
 def levenshtein_matriz(x, y, threshold=None):
-    # esta versión no utiliza threshold, se pone porque se puede
-    # invocar con él, en cuyo caso se ignora
-    lenX, lenY = len(x), len(y) # longitud de las cadenas
-    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int) # matriz de distancias
-    for i in range(1, lenX + 1): # inicializar primera columna
-        D[i][0] = D[i - 1][0] + 1   
-    for j in range(1, lenY + 1): # inicializar primera fila
+    # esta versiÃ³n no utiliza threshold, se pone porque se puede
+    # invocar con Ã©l, en cuyo caso se ignora
+    lenX, lenY = len(x), len(y)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int)
+    for i in range(1, lenX + 1):
+        D[i][0] = D[i - 1][0] + 1
+    for j in range(1, lenY + 1):
         D[0][j] = D[0][j - 1] + 1
-        for i in range(1, lenX + 1): # completar el resto de la matriz
-            D[i][j] = min( # mínimo de las tres operaciones
-                D[i - 1][j] + 1, 
+        for i in range(1, lenX + 1):
+            D[i][j] = min(
+                D[i - 1][j] + 1,
                 D[i][j - 1] + 1,
-                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]), # suma 0 si son iguales, 1 si son distintas
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
             )
     return D[lenX, lenY]
 
 def levenshtein_edicion(x, y, threshold=None):
-    # a partir de la versión levenshtein_matriz
+    """
+    Cálculo distancia de levenshtein con matriz y 
+    recorrido
+    """
     lenX, lenY = len(x), len(y)
-    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int)
-    for i in range(1, lenX + 1): # rellena la primera fila
+    D = np.zeros((lenX + 1, lenY + 1), dtype=int)
+    for i in range(1, lenX + 1): # Rellena la primera fila
         D[i][0] = D[i - 1][0] + 1
-    for j in range(1, lenY + 1): # para todas las filas
-        D[0][j] = D[0][j - 1] + 1 # rellena el primer elemento
-        for i in range(1, lenX + 1): #para las columnas
+    for j in range(1, lenY + 1): # Para todas las filas
+        D[0][j] = D[0][j - 1] + 1 # Rellenas el primer elemento
+        for i in range(1, lenX + 1): # Para el resto de columnas
             D[i][j] = min(
-                D[i - 1][j] + 1, #ins
-                D[i][j - 1] + 1, # bor
-                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]), #sust
+                D[i - 1][j] + 1, # Inserción
+                D[i][j - 1] + 1, # Borrado
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]), # Sustitución
             )
-    posX,posY = D.shape[0] -1, D.shape[1]-1 #para empezar por el final
+    posX, posY = D.shape[0] - 1, D.shape[1] - 1  # Desde el final
     secuencia = []
-    while posX > 0 and posY > 0: #recorrer matriz
-        # se miran los casos
-        ins= D[posX, posY -1]
-        borr=D[posX -1, posY]
-        sust=D[posX -1, posY -1]
-        #para elegir la operacion optima
-        opMenosCoste = min(ins,borr,sust)
-        if(ins == opMenosCoste):
-            secuencia.append(('', y[posY - 1]))
-            posY -= 1
-        elif(borr == opMenosCoste):
-            secuencia.append((x[posX - 1], ''))
-            posX -= 1
-        elif(sust == opMenosCoste): 
-            secuencia.append((x[posX - 1], y[posY - 1]))
-            posX -= 1
-            posY -= 1
-    #si se llega a una pared de la matriz
+    while posX > 0 and posY > 0: # Recorremos toda la matriz
+        # Calculamos los diferentes casos
+        ins = D[posX, posY - 1]
+        bor = D[posX - 1, posY]
+        sus = D[posX - 1, posY - 1]
+        
+        # Lógica para elegir la operación
+        opMin = min(ins, bor, sus)
+        if sus == opMin:
+            op = (x[posX - 1], y[posY - 1])
+            decX, decY = 1, 1
+        elif ins == opMin:
+            op = ('', y[posY - 1])
+            decX, decY = 0, 1
+        elif bor == opMin:
+            op = (x[posX - 1], '')
+            decX, decY = 1, 0
+        else:
+            print("Error en edición")
+            exit()
+        
+        # Añadimos la operación y reducimos los índices
+        secuencia.append(op)
+        posX -= decX
+        posY -= decY
+    # Si llegamos a una pared entonces suponemos inserciones o borrados
+    while posY > 0:
+        secuencia.append(('', y[posY - 1]))
+        posY -= 1
     while posX > 0:
         secuencia.append((x[posX - 1], ''))
-        posY -= 1
-    while posY > 0:  
-        secuencia.append(('', y[posY - 1]))
-        posY -= 1   
-    #invertir lista y devolver las operaciones
+        posX -= 1
+    # Devolvemos las operaciones en el orden correcto
     secuencia = secuencia[::-1]
-    return D[lenX,lenY], secuencia
+    return D[lenX, lenY], secuencia
 
 def levenshtein_reduccion(x, y, threshold=None):
-    # completar versión con reducción coste espacial
+    # completar versiÃ³n con reducciÃ³n coste espacial
     return 0 # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def levenshtein(x, y, threshold):
-    # completar versión reducción coste espacial y parada por threshold
+    # completar versiÃ³n reducciÃ³n coste espacial y parada por threshold
     return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def levenshtein_cota_optimista(x, y, threshold):
-    dic = {}
-    for i in x:
-        if i not in dic:
-            dic[i] = 1
-        else:
-            dic[i] += 1
-    for j in y:
-        if j not in dic:
-            dic[j] = -1
-        else:
-            dic[j] -= 1
+    return 0 # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
-    pos = 0
-    neg = 0
-    for v in dic.values():
-        if v > 0:
-            pos += v
-        elif v < 0:
-            neg += v
-    cota = max(abs(pos), abs(neg))
-    if cota < threshold: #si la cota optimista es menor que el threshold, se llama a levenshtein
-        res = levenshtein(x, y, threshold)
-    else: res = threshold + 1
-
-    return res  
-    
 def damerau_restricted_matriz(x, y, threshold=None):
-    # completar versión Damerau-Levenstein restringida con matriz
-    #PRUEBA
-    return 0
+    # completar versiÃ³n Damerau-Levenstein restringida con matriz
+    lenX, lenY = len(x), len(y)
     # COMPLETAR
+    return D[lenX, lenY]
 
 def damerau_restricted_edicion(x, y, threshold=None):
-    # partiendo de damerau_restricted_matriz añadir recuperar
-    # secuencia de operaciones de edición
+    # partiendo de damerau_restricted_matriz aÃ±adir recuperar
+    # secuencia de operaciones de ediciÃ³n
     return 0,[] # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def damerau_restricted(x, y, threshold=None):
-    # versión con reducción coste espacial y parada por threshold
+    # versiÃ³n con reducciÃ³n coste espacial y parada por threshold
      return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def damerau_intermediate_matriz(x, y, threshold=None):
-    # completar versión Damerau-Levenstein intermedia con matriz
-    return 0
+    # completar versiÃ³n Damerau-Levenstein intermedia con matriz
+    return D[lenX, lenY]
 
 def damerau_intermediate_edicion(x, y, threshold=None):
-    # partiendo de matrix_intermediate_damerau añadir recuperar
-    # secuencia de operaciones de edición
-    # completar versión Damerau-Levenstein intermedia con matriz
-    
-    #longitud cadenas x e y
     lenX, lenY = len(x), len(y)
-    #matriz de 0 para resultado intermedios
-    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int)
-    for i in range(1, lenX + 1): # Rellena la primera fila
-        #insercion (x - cadena vacia)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int64)
+    for i in range(1, lenX + 1): 
         D[i][0] = D[i - 1][0] + 1
-    for j in range(1, lenY + 1): # Para cada columna
-        #insercion (y - cadena vacia)
-        D[0][j] = D[0][j - 1] + 1 # Rellenas su vertical
-        for i in range(1, lenX + 1): # Para cada fila
+    for j in range(1, lenY + 1): 
+        D[0][j] = D[0][j - 1] + 1
+        for i in range(1, lenX + 1):
             D[i][j] = min(
-                D[i - 1][j] + 1, #ins
-                D[i][j - 1] + 1, #ins
-                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]), #sust
+                D[i - 1][j] + 1,
+                D[i][j - 1] + 1,
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
             )
             if (i > 1 and j > 1)\
                 and (x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2]):
@@ -143,8 +122,7 @@ def damerau_intermediate_edicion(x, y, threshold=None):
                     D[i - 2][j - 2] + 1
                 )
 
-            #Casos de transposicion nuevos
-            # acb -> ba
+            #acb -> ba
             if (i > 2 and j > 1)\
                 and (x[i - 3] == y[j - 1] and x[i - 1] == y[j - 2]):
                 D[i][j] = min(
@@ -152,63 +130,70 @@ def damerau_intermediate_edicion(x, y, threshold=None):
                     D[i - 3][j - 2] + 2
                 )
 
-            # ab -> bca
+            #ab -> bca
             if (i > 1 and j > 2)\
                 and (x[i - 2] == y[j - 1] and x[i - 1] == y[j - 3]):
                 D[i][j] = min(
                     D[i][j],
                     D[i - 2][j - 3] + 2
                 )
-    #ultimas posiciones matriz           
+
     posX, posY = D.shape[0] - 1, D.shape[1] - 1
     secuencia = []
-    while posX > 0 and posY > 0: #mientras haya elementos en la cadena
+    while posX > 0 and posY > 0:
         ins = D[posX, posY - 1]
-        borr = D[posX - 1, posY]
-        sust = D[posX - 1, posY - 1]
-        #ab -> ba
+        bor = D[posX - 1, posY]
+        sus = D[posX - 1, posY - 1]
+
         if (posX > 1 and posY > 1)\
                 and (x[posX - 2] == y[posY - 1] and x[posX - 1] == y[posY - 2]):
-            int = D[posX - 2, posY - 2]
+            dInt = D[posX - 2, posY - 2]
         else:
-            int = float('inf')
-        # acb->ba
+            dInt = float('inf')
+        # Realizamos lo mismo para las nuevas 
+        # condiciones de damerau
         if (posX > 2 and posY > 1)\
                 and (x[posX - 3] == y[posY - 1] and x[posX - 1] == y[posY - 2]):
-            int3_2 = D[posX - 3][posY - 2]
+            dInt3_2 = D[posX - 3][posY - 2]
         else:
-            int3_2 = float('inf')
-        #ab->bca
+            dInt3_2 = float('inf')
         if (posX > 1 and posY > 2)\
                 and (x[posX - 2] == y[posY - 1] and x[posX - 1] == y[posY - 3]):
-            int2_3 = D[posX - 2][posY - 3]
+            dInt2_3 = D[posX - 2][posY - 3]
         else:
-            int2_3 = float('inf')
+            dInt2_3 = float('inf')
 
-        opMinCoste = min (ins,borr,sust,int,int3_2, int2_3)
-        if(ins == opMinCoste):
-            secuencia.append(('', y[posY - 1]))
-            posY -= 1
-        elif(borr == opMinCoste):
-            secuencia.append((x[posX - 1], ''))
-            posX -= 1
-        elif(sust == opMinCoste): 
-            secuencia.append((x[posX - 1], y[posY - 1]))
-            posX -= 1
-            posY -= 1
-        if(int == opMinCoste):
-            secuencia.append(('', y[posY - 1]))
-            posX -= 2
-            posY -= 2
-        elif(int3_2 == opMinCoste):
-            secuencia.append((x[posX - 1], ''))
-            posX -= 3
-            posY -= 2
-        elif(int2_3 == opMinCoste): 
-            secuencia.append((x[posX - 1], y[posY - 1]))
-            posX -= 2
-            posY -= 3
-    #paredes    
+        opMin = min (ins, bor, sus, dInt, dInt3_2, dInt2_3)
+        if (dInt3_2 == opMin): # Intercambio 3 a 2 letras
+            op = (str(x[posX - 3:posX]), str(y[posY - 2:posY]))
+            decX=3
+            decY=2
+        elif (dInt2_3 == opMin): # Intercambio 2 a 3 letras
+            op = (str(x[posX - 2:posX]), str(y[posY - 3:posY]))
+            decX=2
+            decY=3
+        elif (dInt == opMin): # ab -> ba
+            op = (str(x[posX - 2:posX]), str(y[posY - 2:posY]))
+            decX=2
+            decY=2
+        elif (sus == opMin): # Sustitución
+            op = (x[posX - 1], y[posY - 1])
+            decX=1
+            decY=1
+        elif (ins == opMin): # Inserción
+            op = ('', y[posY - 1])
+            decX=0
+            decY=1
+        elif (bor == opMin): # Borrado
+            op = (x[posX - 1], '')
+            decX=1
+            decY=0
+        else:
+            print("Error en edición")
+            exit()
+        secuencia.append(op)
+        posX -= decX
+        posY -= decY
     while posY > 0:
         secuencia.append(('', y[posY - 1]))
         posY -= 1
@@ -217,10 +202,11 @@ def damerau_intermediate_edicion(x, y, threshold=None):
         posX -= 1
     secuencia = secuencia[::-1]
     return D[lenX, lenY], secuencia
+    
 def damerau_intermediate(x, y, threshold=None):
-    # versión con reducción coste espacial y parada por threshold
+    # versiÃ³n con reducciÃ³n coste espacial y parada por threshold
     return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
-
+        
 opcionesSpell = {
     'levenshtein_m': levenshtein_matriz,
     'levenshtein_r': levenshtein_reduccion,
@@ -236,4 +222,4 @@ opcionesEdicion = {
     'levenshtein': levenshtein_edicion,
     'damerau_r':   damerau_restricted_edicion,
     'damerau_i':   damerau_intermediate_edicion
-}    
+}
