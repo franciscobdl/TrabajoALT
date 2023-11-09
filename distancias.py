@@ -97,8 +97,8 @@ def damerau_intermediate_matriz(x, y, threshold=None):
                 D[i][j - 1] + 1,
                 D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
                 D[i - 2][j - 2] + 1,
-                D[i - 2][j] + 1,
-                D[i][j - 1] + 1,
+                D[i - 3][j - 2] + 2,
+                D[i - 2][j - 3] + 2,
             )
 
     return D[lenX, lenY]
