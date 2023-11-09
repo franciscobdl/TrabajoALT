@@ -45,7 +45,7 @@ def levenshtein(x, y, threshold):
     Vcurrent = np.zeros(lenX + 1, dtype=int)
     Vprev = np.zeros(lenX + 1, dtype=int)
     Vcurrent[0]=0
-    next=0
+    result=0
 
     for i in range(1, lenX + 1):
        Vcurrent[i] = Vcurrent[i - 1] + 1
@@ -55,15 +55,11 @@ def levenshtein(x, y, threshold):
         Vcurrent[0] = Vprev[0] + 1
         for i in range(1, lenX + 1):
             Vcurrent[i] = min(Vcurrent[i - 1] + 1, Vprev[i] + 1, Vprev[i - 1] + (x[i - 1] != y[j - 1]),)
-            if i != lenX:
-                Vnext = Vcurrent
-                Vnext[i+1] = min(Vnext[i] + 1, Vcurrent[i + 1] + 1, Vcurrent[i] + (x[i] != y[j - 1]),)
-                # Parada  si estamos en vector columna y este ya tiene un valor igual o superior
-                # al umbral proporcionado (threshold)
-            if Vcurrent[i] >= threshold + 1:
-                return threshold + 1
-
-    return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+        # Parada  si estamos en vector columna y este ya tiene un valor igual o superior
+        # al umbral proporcionado (threshold)
+        if Vcurrent[lenX] >= threshold + 1:
+            return threshold + 1
+    return min(Vcurrent[lenX], threshold + 1,)# COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def levenshtein_cota_optimista(x, y, threshold):
     return 0 # COMPLETAR Y REEMPLAZAR ESTA PARTE
@@ -102,7 +98,6 @@ def damerau_intermediate_matriz(x, y, threshold=None):
             )
 
     return D[lenX, lenY]
-
 
 def damerau_intermediate_edicion(x, y, threshold=None):
     # partiendo de matrix_intermediate_damerau añadir recuperar
