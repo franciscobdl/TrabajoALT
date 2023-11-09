@@ -113,8 +113,9 @@ def levenshtein(x, y, threshold):
                 Vprev[i] + 1, 
                 Vprev[i - 1] + (x[i - 1] != y[j - 1])
             )
-        # if Vcurrent[lenX] > threshold:
-        #     return 0
+
+        if  min(Vcurrent) > threshold:
+            return threshold + 1
 
     return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
