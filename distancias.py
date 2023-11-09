@@ -73,19 +73,73 @@ def levenshtein_edicion(x, y, threshold=None):
     return D[lenX, lenY], secuencia
 
 def levenshtein_reduccion(x, y, threshold=None):
-    # completar versiÃ³n con reducciÃ³n coste espacial
-    return 0 # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    # completar versión con reducción coste espacial
+    lenX, lenY = len(x), len(y)
+    Vcurrent = np.zeros(lenX + 1, dtype=int)
+    Vprev = np.zeros(lenX + 1, dtype=int)
+    Vcurrent[0]=0
+
+    for i in range(1, lenX + 1):
+       Vcurrent[i] = Vcurrent[i - 1] + 1
+
+    for j in range(1, lenY + 1):
+        Vcurrent, Vprev = Vprev, Vcurrent
+        Vcurrent[0] = Vprev[0] + 1
+        for i in range(1, lenX + 1):
+            Vcurrent[i] = min(
+                Vcurrent[i - 1] + 1, 
+                Vprev[i] + 1, 
+                Vprev[i - 1] + (x[i - 1] != y[j - 1])
+            )
+        
+    return Vcurrent[lenX] # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def levenshtein(x, y, threshold):
     # completar versiÃ³n reducciÃ³n coste espacial y parada por threshold
     return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def levenshtein_cota_optimista(x, y, threshold):
-    return 0 # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    dic = {}
+    for i in x:
+        if i not in dic:
+            dic[i] = 1
+        else:
+            dic[i] += 1
+    for j in y:
+        if j not in dic:
+            dic[j] = -1
+        else:
+            dic[j] -= 1
+
+    pos = 0
+    neg = 0
+    for v in dic.values():
+        if v > 0:
+            pos += v
+        elif v < 0:
+            neg += v
+    cota = max(abs(pos), abs(neg))
+    if cota < threshold: #si la cota optimista es menor que el threshold, se llama a levenshtein
+        res = levenshtein(x, y, threshold)
+    else: res = threshold + 1
+
+    return res
 
 def damerau_restricted_matriz(x, y, threshold=None):
     # completar versiÃ³n Damerau-Levenstein restringida con matriz
     lenX, lenY = len(x), len(y)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int)
+    for i in range(1, lenX + 1):
+        D[i][0] = D[i - 1][0] + 1
+    for j in range(1, lenY + 1):
+        D[0][j] = D[0][j - 1] + 1
+        for i in range(1, lenX + 1):
+            D[i][j] = min(
+                D[i - 1][j] + 1,
+                D[i][j - 1] + 1,
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
+                D[i - 2][j - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf')
+            )
     # COMPLETAR
     return D[lenX, lenY]
 
@@ -95,11 +149,27 @@ def damerau_restricted_edicion(x, y, threshold=None):
     return 0,[] # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def damerau_restricted(x, y, threshold=None):
-    # versiÃ³n con reducciÃ³n coste espacial y parada por threshold
-     return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+
+    return 0
 
 def damerau_intermediate_matriz(x, y, threshold=None):
-    # completar versiÃ³n Damerau-Levenstein intermedia con matriz
+    # completar versión Damerau-Levenstein intermedia con matriz
+    lenX, lenY = len(x), len(y)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=int)
+    for i in range(1, lenX + 1):
+        D[i][0] = D[i - 1][0] + 1
+    for j in range(1, lenY + 1):
+        D[0][j] = D[0][j - 1] + 1
+        for i in range(1, lenX + 1):
+            D[i][j] = min(
+                D[i - 1][j] + 1,
+                D[i][j - 1] + 1,
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
+                D[i - 2][j - 2] + 1,
+                D[i - 3][j - 2] + 2,
+                D[i - 2][j - 3] + 2,
+            )
+
     return D[lenX, lenY]
 
 def damerau_intermediate_edicion(x, y, threshold=None):
