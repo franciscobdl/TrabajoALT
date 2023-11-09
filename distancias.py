@@ -110,8 +110,20 @@ def levenshtein_cota_optimista(x, y, threshold):
 def damerau_restricted_matriz(x, y, threshold=None):
     # completar versiÃ³n Damerau-Levenstein restringida con matriz
     lenX, lenY = len(x), len(y)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=np.int)
+    for i in range(1, lenX + 1):
+        D[i][0] = D[i - 1][0] + 1
+    for j in range(1, lenY + 1):
+        D[0][j] = D[0][j - 1] + 1
+        for i in range(1, lenX + 1):
+            D[i][j] = min(
+                D[i - 1][j] + 1,
+                D[i][j - 1] + 1,
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
+                D[i - 2][j - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf')
+            )
     # COMPLETAR
-    return 0
+    return D[lenX, lenY]
 
 def damerau_restricted_edicion(x, y, threshold=None):
     # partiendo de damerau_restricted_matriz aÃ±adir recuperar
