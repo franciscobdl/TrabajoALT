@@ -162,7 +162,8 @@ def damerau_restricted_matriz(x, y, threshold=None):
                 D[i - 2][j - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf')
             )
     # COMPLETAR
-    return 0
+    return D[lenX, lenY]
+
 
 def damerau_restricted_edicion(x, y, threshold=None):
     # partiendo de damerau_restricted_matriz aÃ±adir recuperar
