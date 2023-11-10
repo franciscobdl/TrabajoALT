@@ -565,15 +565,15 @@ class SAR_Indexer:
         result = []
         if isinstance(term, List): result = term #si ya es una posting list, no hace nada
         elif term in self.index:
-            result = self.index['all'][term]
+            result = self.index[term]
         else:
             if (self.use_spelling):
                 words = []
                 words = self.speller.suggest(term)
                 print(words)
                 for word in words:
-                    if word in self.index['all']:
-                        result = self.or_posting(result, self.index['all'][word])
+                    if word in self.index:
+                        result = self.or_posting(result, self.index[word])
         print(result)
         return result
 
@@ -662,7 +662,7 @@ class SAR_Indexer:
         if use_spelling:
             self.use_spelling = True
             opcionesSpell = distancias.opcionesSpell
-            vocabulary = list(self.index['all'].keys())
+            vocabulary = list(self.index.keys())
             self.speller = SpellSuggester(opcionesSpell, vocabulary, distance, threshold)    
 
     def get_permuterm(self, term:str, field:Optional[str]=None):
@@ -728,30 +728,7 @@ class SAR_Indexer:
         return: posting list con los artid incluidos en p1 y p2
 
         """
-        #Inicialización de variables
-        respuesta = []
-        puntero1 = 0
-        puntero2 = 0
-        
-        #Si alguna lista es vacía, devuelve una lista vacía
-        if(len(p1) == 0 or len(p2) == 0): return respuesta
-        
-        #Bucle principal para recorrer las dos listas
-        while(puntero1 < len(p1) and puntero2 < len(p2)):
-            #Si los ID de los Documentos son iguales, se añade el documento a la respuesta y se avanzan los punteros
-            if p1[puntero1] == p2[puntero2]:
-                respuesta.append(p1[puntero1])
-                puntero1 = puntero1 + 1
-                puntero2 = puntero2 + 1
-            else:
-                #Si el ID del Documento de p1 es menor, se avanza el puntero de p1
-                if p1[puntero1] < p2 [puntero2]:
-                    puntero1 = puntero1 + 1
-                #Sino, se avanza el de p2
-                else:
-                    puntero2 = puntero2 + 1
-        #Se devuelve el resultado cuando cualquier puntero llega al final de la lista
-        return respuesta
+        return sorted(set(p1).intersection(p2))
                 
         
 
@@ -768,46 +745,7 @@ class SAR_Indexer:
         return: posting list con los artid incluidos de p1 o p2
 
         """
-        #Inicialización de variables
-        respuesta = []
-        puntero1 = 0
-        puntero2 = 0
-        
-        #Si alguna de las listas es vacía, devuelve la lista no vacía
-        if(len(p1) == 0): return p2
-        if(len(p2) == 0): return p1
-        
-        #Bucle principal para recorrer las dos listas
-        while(puntero1 < len(p1) and puntero2 < len(p2)):
-            #Si los ID de los Documentos son iguales, se añade el documento una sola vez a la respuesta y se avanzan los punteros
-            if p1[puntero1] == p2[puntero2]:
-                respuesta.append(p1[puntero1])
-                puntero1 = puntero1 + 1
-                puntero2 = puntero2 + 1
-            else:
-                if p1[puntero1] < p2[puntero2]:
-                    respuesta.append(p1[puntero1])
-                    puntero1 = puntero1 + 1
-                    while(puntero1 < len(p1) and p1[puntero1] < p2[puntero2]):
-                        respuesta.append(p1[puntero1])
-                        puntero1 = puntero1 + 1
-                else:
-                    respuesta.append(p2[puntero2])
-                    puntero2 = puntero2 + 1
-                    while(puntero2 < len(p2) and p2[puntero2] < p1[puntero1]):
-                        respuesta.append(p2[puntero2])
-                        puntero2 = puntero2 + 1
-
-        
-        #Se añade la lista cuyo puntero no había llegado al final
-        if(puntero1 < len(p1)):
-            for docid in p1[puntero1:]:
-                respuesta.append(docid)
-        if(puntero2 < len(p2)):
-            for docid in p2[puntero2:]:
-                respuesta.append(docid)
-                
-        return respuesta
+        return sorted(set(p1).union(p2))
 
 
     def minus_posting(self, p1, p2):
