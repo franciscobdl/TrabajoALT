@@ -570,11 +570,9 @@ class SAR_Indexer:
             if (self.use_spelling):
                 words = []
                 words = self.speller.suggest(term)
-                print(words)
                 for word in words:
                     if word in self.index:
                         result = self.or_posting(result, self.index[word])
-        print(result)
         return result
 
 
