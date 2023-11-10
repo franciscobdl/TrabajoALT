@@ -168,7 +168,63 @@ def damerau_restricted_matriz(x, y, threshold=None):
 def damerau_restricted_edicion(x, y, threshold=None):
     # partiendo de damerau_restricted_matriz aÃ±adir recuperar
     # secuencia de operaciones de ediciÃ³n
-    return 0,[] # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    lenX, lenY = len(x), len(y)
+    D = np.zeros((lenX + 1, lenY + 1), dtype=int)
+    for i in range(1, lenX + 1): # Rellena la primera fila
+        D[i][0] = D[i - 1][0] + 1
+    for j in range(1, lenY + 1): # Para todas las filas
+        D[0][j] = D[0][j - 1] + 1 # Rellenas el primer elemento
+        for i in range(1, lenX + 1): # Para el resto de columnas
+            D[i][j] = min(
+                D[i - 1][j] + 1,
+                D[i][j - 1] + 1,
+                D[i - 1][j - 1] + (x[i - 1] != y[j - 1]),
+                D[i - 2][j - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf')
+            )
+    posX, posY = D.shape[0] - 1, D.shape[1] - 1  # Desde el final
+    secuencia = []
+    while posX > 0 and posY > 0: # Recorremos toda la matriz
+        # Calculamos los diferentes casos
+        insercion = D[posX, posY - 1]
+        borrado = D[posX - 1, posY]
+        sustitucion = D[posX - 1, posY - 1]
+        if posX > 1 and posY > 1 and x[posX - 2] == y[posY - 1] and x[posX - 1] == y[posY - 2]:
+            trasposicion = D[posX - 2, posY - 2]  
+        else: 
+            trasposicion = float('inf')
+        
+        # Lógica para elegir la operación
+        opMinCoste = min(insercion, borrado, sustitucion, trasposicion)
+        if sustitucion == opMinCoste:
+            op = (x[posX - 1], y[posY - 1])
+            decrementoX, decrementoY = 1, 1
+        elif insercion == opMinCoste:
+            op = ('', y[posY - 1])
+            decrementoX, decrementoY = 0, 1
+        elif borrado == opMinCoste:
+            op = (x[posX - 1], '')
+            decrementoX, decrementoY = 1, 0
+        elif trasposicion == opMinCoste:
+            op = (str(x[posX - 2:posX]), str(y[posY - 2:posY]))
+            decrementoX, decrementoY = 2, 2
+        else:
+            print("Error en edición")
+            exit()
+        
+        # Añadimos la operación y reducimos los índices
+        secuencia.append(op)
+        posX -= decrementoX
+        posY -= decrementoY
+    # Si llegamos a una pared entonces suponemos inserciones o borrados
+    while posY > 0:
+        secuencia.append(('', y[posY - 1]))
+        posY -= 1
+    while posX > 0:
+        secuencia.append((x[posX - 1], ''))
+        posX -= 1
+    # Devolvemos las operaciones en el orden correcto
+    secuencia = secuencia[::-1]
+    return D[lenX, lenY], secuencia
 
 def damerau_restricted(x, y, threshold=None):
 
