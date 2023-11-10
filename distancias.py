@@ -205,7 +205,7 @@ def damerau_restricted_edicion(x, y, threshold=None):
             op = (x[posX - 1], '')
             decrementoX, decrementoY = 1, 0
         elif trasposicion == opMinCoste:
-            op = (str(x[posX - 2:posX]), str(y[posY - 2:posY]))
+            op = (x[posX - 2:posX], y[posY - 2:posY])
             decrementoX, decrementoY = 2, 2
         else:
             print("Error en edición")
