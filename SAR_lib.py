@@ -565,13 +565,16 @@ class SAR_Indexer:
         result = []
         if isinstance(term, List): result = term #si ya es una posting list, no hace nada
         elif term in self.index:
-            result = self.index[term]
+            result = self.index['all'][term]
         else:
             if (self.use_spelling):
                 words = []
                 words = self.speller.suggest(term)
+                print(words)
                 for word in words:
-                    result.append(self.index[word])
+                    if word in self.index['all']:
+                        result = self.or_posting(result, self.index['all'][word])
+        print(result)
         return result
 
 
@@ -659,8 +662,7 @@ class SAR_Indexer:
         if use_spelling:
             self.use_spelling = True
             opcionesSpell = distancias.opcionesSpell
-            vocabulary = list(self.index.keys())
-            # print(vocabulary)
+            vocabulary = list(self.index['all'].keys())
             self.speller = SpellSuggester(opcionesSpell, vocabulary, distance, threshold)    
 
     def get_permuterm(self, term:str, field:Optional[str]=None):
