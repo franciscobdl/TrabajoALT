@@ -328,7 +328,50 @@ def damerau_intermediate_edicion(x, y, threshold=None):
     
 def damerau_intermediate(x, y, threshold=None):
     # versión con reducción coste espacial y parada por threshold
-    return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    lenX, lenY = len(x), len(y)
+    Vcurrent = np.zeros(lenX + 1, dtype=int)
+    Vprev = np.zeros(lenX + 1, dtype=int)
+    Vprev_ant = np.zeros(lenX + 1, dtype=int)
+    Vant_ant = np.zeros(lenX + 1, dtype=int)
+    Vcurrent[0]=0
+   
+    for i in range(1, lenX + 1):
+        Vcurrent[i] = Vcurrent[i - 1] + 1
+    for j in range(1, lenY + 1):
+        Vcurrent, Vprev, Vprev_ant, Vant_ant = Vant_ant, Vcurrent, Vprev, Vprev_ant
+        Vcurrent[0] = Vprev[0] + 1
+        for i in range(1, lenX + 1):
+            Vcurrent[i] = min(
+                Vcurrent[i - 1] + 1,
+                Vprev[i] + 1,
+                Vprev[i - 1] + (x[i - 1] != y[j - 1]),
+            )
+            if (i > 1 and j > 1)\
+                and (x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2]):
+                Vcurrent[i] = min(
+                    Vcurrent[i],
+                    Vprev_ant[i - 2] + 1
+                )
+
+            #acb -> ba
+            if (i > 2 and j > 1)\
+                and (x[i - 3] == y[j - 1] and x[i - 1] == y[j - 2]):
+                Vcurrent[i] = min(
+                    Vcurrent[i],
+                    Vprev_ant[i - 3] + 2
+                )
+
+            #ab -> bca
+            if (i > 1 and j > 2)\
+                and (x[i - 2] == y[j - 1] and x[i - 1] == y[j - 3]):
+                Vcurrent[i] = min(
+                    Vcurrent[i],
+                    Vant_ant[i - 2] + 2
+                )
+        if  min(Vcurrent) > threshold:
+            return threshold + 1
+        
+    return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 opcionesSpell = {
     'levenshtein_m': levenshtein_matriz,
