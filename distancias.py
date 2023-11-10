@@ -84,52 +84,32 @@ def damerau_restricted_matriz(x, y, threshold=None):
 def damerau_restricted_edicion(x, y, threshold=None):
     # partiendo de damerau_restricted_matriz añadir recuperar
     # secuencia de operaciones de edición
-    lenX, lenY = len(x), len(y)
-    Vcurrent = np.zeros(lenX + 1, dtype=int)
-    Vprev = np.zeros(lenX + 1, dtype=int)
-    Vcurrent[0]=0
-
-    for i in range(1, lenX + 1):
-       Vcurrent[i] = Vcurrent[i - 1] + 1
-
-    for j in range(1, lenY + 1):
-        Vcurrent, Vprev = Vprev, Vcurrent
-        Vcurrent[0] = Vprev[0] + 1
-        for i in range(1, lenX + 1):
-            Vcurrent[i] = min(
-                Vcurrent[i - 1] + 1,
-                Vprev[i] + 1,
-                Vprev[i - 1] + (x[i - 1] != y[j - 1]),
-                Vprev[i - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf'),
-            )
-           
-    # COMPLETAR
-    return Vcurrent[lenX]
+    return 0
 
 def damerau_restricted(x, y, threshold=None):
     # versión con reducción coste espacial y parada por threshold
     lenX, lenY = len(x), len(y)
     Vcurrent = np.zeros(lenX + 1, dtype=int)
     Vprev = np.zeros(lenX + 1, dtype=int)
+    Vprev_ant = np.zeros(lenX + 1, dtype=int)
     Vcurrent[0]=0
 
     for i in range(1, lenX + 1):
        Vcurrent[i] = Vcurrent[i - 1] + 1
 
     for j in range(1, lenY + 1):
-        Vcurrent, Vprev = Vprev, Vcurrent
+        Vcurrent, Vprev, Vprev_ant = Vprev_ant, Vcurrent, Vprev
         Vcurrent[0] = Vprev[0] + 1
         for i in range(1, lenX + 1):
             Vcurrent[i] = min(
                 Vcurrent[i - 1] + 1,
                 Vprev[i] + 1,
                 Vprev[i - 1] + (x[i - 1] != y[j - 1]),
-                Vprev[i - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf'),
+                Vprev_ant[i - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf'),
             )
-           
+
     # COMPLETAR
-    return Vcurrent[lenX]
-    #return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
 
 def damerau_intermediate_matriz(x, y, threshold=None):
     # completar versión Damerau-Levenstein intermedia con matriz
