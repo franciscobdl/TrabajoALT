@@ -184,6 +184,8 @@ def damerau_restricted(x, y, threshold=None):
                 Vprev[i - 1] + (x[i - 1] != y[j - 1]),
                 Vprev_ant[i - 2] + 1 if i > 1 and j > 1 and x[i - 2] == y[j - 1] and x[i - 1] == y[j - 2] else float('inf'),
             )
+        if  min(Vcurrent) > threshold:
+            return threshold + 1
 
     # COMPLETAR
     return min(Vcurrent[lenX],threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
